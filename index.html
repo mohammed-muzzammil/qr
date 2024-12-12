@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Invitation</title>
+    <style>
+        /* Reset margins and padding */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* Fullscreen video styling */
+        video {
+            display: none; /* Hidden until user clicks play */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Play button styling */
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 1.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <video id="video" playsinline loop>
+        <source src="video4.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <button class="play-button" id="playButton">Play Video</button>
+
+    <script>
+        const video = document.getElementById('video');
+        const playButton = document.getElementById('playButton');
+
+        playButton.addEventListener('click', () => {
+            playButton.style.display = 'none'; // Hide the button
+            video.style.display = 'block';    // Show the video
+            video.play();                     // Play the video
+        });
+    </script>
+</body>
+</html>
