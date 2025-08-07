@@ -5,29 +5,44 @@ Overview
 The service is a decoupled, event-driven microservice built on a task queue architecture. Its primary responsibility is to orchestrate post-processing tasks on assets by reacting to events and delegating the actual work to other specialized "addon" services.
 
 Architecture Diagram
-```mermaid
-flowchart TD
-    subgraph "FileSpin Ecosystem"
-        A["External Event\n(e.g., file-saved)"] --> B{FileSpin Backend}
-        B -->|1. Publishes task| C(Redis Queue)
-    end
 
-    G["Docker Swarm"] -->|Deploys & Manages| H
-
-    subgraph H["asset-post-process Service (Container)"]
-        subgraph "Internal Processes (managed by Supervisor)"
-            D1["Celery Worker\n(process_asset)"]
-            D2["Celery Worker\n(trigger_addon)"]
-            E["FastAPI/Gunicorn\n(Healthcheck API)"]
-        end
-        
-        C -->|2. Consumes asset task| D1
-        D1 -->|4. Pushes addon task| C
-        C -->|5. Consumes addon task| D2
-    end
-
-    D1 <-->|3. Gets asset/user details| B
-    D2 -->|6. Triggers addon via API| F[("Addon Services\n(Emotion, Scene, etc.)")]
+```
+[External Event]
+      |
+      v
+[FileSpin Backend]
+      |
+      v
+[Redis (Message Queue & Cache)]
+      |
+      v
++-------------------------------+
+| asset-post-process Service    |
+|   (Docker Container)          |
+|                               |
+|  +-------------------------+  |
+|  | Celery Worker           |  |
+|  | (process_asset)         |<-------------------+
+|  +-------------------------+                   |
+|            |                                   |
+|            v                                   |
+|  +-------------------------+                   |
+|  | Celery Worker           |                   |
+|  | (trigger_addon)         |                   |
+|  +-------------------------+                   |
+|            |                                   |
+|            v                                   |
+|  [Addon Services: Emotion, Scene, FR, etc.]     |
+|                                               |
+|  [FastAPI / Gunicorn (Healthcheck API)]        |
++-------------------------------+
+      |
+      v
+[Docker Swarm] -- deploys/manages --> [asset-post-process Service]
+      |
+      v
+[Supervisor] -- runs inside container --> [Celery Workers, FastAPI]
+```
 
 ## Workflow Explanation
 
