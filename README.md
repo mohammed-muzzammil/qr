@@ -12,8 +12,38 @@ The service is a **decoupled, event-driven microservice** built on a **task queu
 
 This diagram illustrates the flow of an event through the system, from the initial trigger to the final delegation of work to an addon service.
 
-[ External Event: e.g., file-saved ]|v[ ⚙️ FileSpin Backend ]|| 1. Pushes task messagev[ 💾 Redis: Message Queue & Cache ]|| 2. Worker consumes taskv+------------------------------------------------------------------+|   asset-post-process Service (Docker Container)                  ||                                                                  ||   [ 👷 Celery Worker (process_asset) ] <------> [ ⚙️ FileSpin Backend ] ||       |         ^                          (3. Gets details)     ||       |         |                                                ||       | 4. Pushes addon task                                     ||       v         |                                                ||   [ 💾 Redis Queue ]                                             ||       |         ^                                                ||       |         |                                                ||       | 5. Worker consumes addon task                            ||       v         |                                                ||   [ 👷 Celery Worker (trigger_addon) ]                             ||       |                                                          ||       | 6. Triggers addon via API Call                           ||       v                                                          ||   [ 🧩 Addon Services (Emotion, Scene, etc.) ]                     ||                                                                  |+------------------------------------------------------------------+
----
+[ External Event: e.g., file-saved ]
+           |
+           v
+[ ⚙️ FileSpin Backend ]
+           |
+           | 1. Pushes task message
+           v
+[ 💾 Redis: Message Queue & Cache ]
+           |
+           | 2. Worker consumes task
+           v
++------------------------------------------------------------------+
+|   asset-post-process Service (Docker Container)                  |
+|                                                                  |
+|   [ 👷 Celery Worker (process_asset) ] <------> [ ⚙️ FileSpin Backend ] |
+|       |         ^                          (3. Gets details)     |
+|       |         |                                                |
+|       | 4. Pushes addon task                                     |
+|       v         |                                                |
+|   [ 💾 Redis Queue ]                                             |
+|       |         ^                                                |
+|       |         |                                                |
+|       | 5. Worker consumes addon task                            |
+|       v         |                                                |
+|   [ 👷 Celery Worker (trigger_addon) ]                             |
+|       |                                                          |
+|       | 6. Triggers addon via API Call                           |
+|       v                                                          |
+|   [ 🧩 Addon Services (Emotion, Scene, etc.) ]                     |
+|                                                                  |
++------------------------------------------------------------------+
+
 
 ## Workflow Explanation
 
