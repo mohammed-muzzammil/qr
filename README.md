@@ -8,28 +8,26 @@ Architecture Diagram
 ```mermaid
 flowchart TD
     subgraph "FileSpin Ecosystem"
-        A["External Event\ne.g., file-saved, file-deleted"] -->|"1. Pushes message"| B["FileSpin Backend"]
-        B -->|"2. Publishes task"| C["Redis\n(Message Queue & Cache)"]
+        A["External Event\n(e.g., file-saved)"] --> B{FileSpin Backend}
+        B -->|1. Publishes task| C(Redis Queue)
     end
 
-    subgraph "asset-post-process Service (Docker Container)"
-        D1["Celery Worker\n(process_asset)"]
-        D2["Celery Worker\n(trigger_addon)"]
-        E["FastAPI / Gunicorn\n(Healthcheck API)"]
-        C -->|"3. Consumes task"| D1
-        D1 -->|"4. Pushes addon task"| C
-        C -->|"5. Consumes addon task"| D2
-        D1 <--> |"6. Gets asset/user details"| B
-        D2 -->|"7. Triggers addon via API call"| F["Addon Services\n(Emotion, Scene, FR, etc.)"]
+    G["Docker Swarm"] -->|Deploys & Manages| H
+
+    subgraph H["asset-post-process Service (Container)"]
+        subgraph "Internal Processes (managed by Supervisor)"
+            D1["Celery Worker\n(process_asset)"]
+            D2["Celery Worker\n(trigger_addon)"]
+            E["FastAPI/Gunicorn\n(Healthcheck API)"]
+        end
+        
+        C -->|2. Consumes asset task| D1
+        D1 -->|4. Pushes addon task| C
+        C -->|5. Consumes addon task| D2
     end
 
-    subgraph "Deployment"
-        G["Docker Swarm"] -->|"Deploys & Manages"| H["asset-post-process Service (Docker Container)"]
-        I["Supervisor"] -->|"Runs inside container"| D1
-        I -->|"Runs inside container"| D2
-        I -->|"Runs inside container"| E
-    end
-```
+    D1 <-->|3. Gets asset/user details| B
+    D2 -->|6. Triggers addon via API| F[("Addon Services\n(Emotion, Scene, etc.)")]
 
 ## Workflow Explanation
 
